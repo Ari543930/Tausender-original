@@ -1,0 +1,472 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tausender</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout: phone-app column — app bar, hero card with progress ring, chunky game-style buttons, history cards */
+:root{
+  --bg:#f6f3ec; --card:#ffffff; --ink:#22223a; --muted:#77768c; --line:#e7e2d7;
+  --sun:#ffc53d; --sun-deep:#e09a00; --coral:#ff6b57; --coral-deep:#d4432f; --mint:#2ec4a0; --mint-deep:#1b9479;
+  --ring:#ece6d9; --on-color:#22223a;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#16162a; --card:#22223c; --ink:#f4f2ff; --muted:#a9a8c4; --line:#33335a;
+  --ring:#33335a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#16162a; --card:#22223c; --ink:#f4f2ff; --muted:#a9a8c4; --line:#33335a;
+  --ring:#33335a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:480px;margin:0 auto;padding-block:16px 40px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.view{display:flex;flex-direction:column;gap:18px}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible{outline:3px solid var(--coral);outline-offset:3px}
+button:disabled{opacity:.4;cursor:default}
+.label{font-size:13px;font-weight:800;color:var(--muted);margin:0}
+.note{font-size:14px;color:var(--muted);min-height:1.3em;margin:0;text-align:center}
+.card{background:var(--card);border-radius:24px;padding:20px;box-shadow:0 2px 0 var(--line)}
+
+/* chunky 3D buttons */
+.btn{border:0;border-radius:18px;padding:16px 18px;font-family:var(--display);font-weight:700;font-size:22px;
+  background:var(--sun);color:var(--on-color);box-shadow:0 5px 0 var(--sun-deep);transition:transform .08s,box-shadow .08s}
+.btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 1px 0 var(--sun-deep)}
+.btn.coral{background:var(--coral);color:#fff;box-shadow:0 5px 0 var(--coral-deep)}
+.btn.coral:active{box-shadow:0 1px 0 var(--coral-deep)}
+.btn.soft{background:var(--bg);color:var(--ink);box-shadow:0 4px 0 var(--line);font-size:17px;padding:12px}
+.btn.soft:active:not(:disabled){box-shadow:0 0 0 var(--line)}
+.btn.big{width:100%;font-size:26px;padding:20px}
+
+/* app bar */
+.appbar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:28px;margin:0}
+.logo i{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--sun);color:var(--on-color);
+  font-style:normal;font-size:17px;box-shadow:0 3px 0 var(--sun-deep);transform:rotate(-6deg)}
+.iconbtn{width:44px;height:44px;border-radius:14px;border:0;background:var(--card);box-shadow:0 3px 0 var(--line);font-size:22px;font-family:var(--display);font-weight:700}
+.timerpill{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:999px;padding:8px 16px;box-shadow:0 3px 0 var(--line);
+  font-family:var(--display);font-weight:600;font-size:22px;font-variant-numeric:tabular-nums}
+.timerpill .dot{width:10px;height:10px;border-radius:50%;background:var(--coral)}
+.timerpill.live .dot{animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+
+/* ring */
+.ringbox{position:relative;width:min(300px,78vw);aspect-ratio:1;max-width:100%;margin:0 auto}
+.ringbox svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ringbox .track{fill:none;stroke:var(--ring);stroke-width:20}
+.ringbox .prog{fill:none;stroke:var(--sun);stroke-width:20;stroke-linecap:round;transition:stroke-dashoffset .5s cubic-bezier(.3,1.4,.5,1)}
+.ringbox.done .prog{stroke:var(--mint)}
+.ringin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
+.big-num{font-family:var(--display);font-weight:700;font-size:clamp(64px,22vw,96px);line-height:.9;font-variant-numeric:tabular-nums;user-select:none;-webkit-user-select:none}
+.of{font-family:var(--display);font-weight:500;font-size:18px;color:var(--muted)}
+.pop{animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.14)}100%{transform:scale(1)}}
+
+/* menu */
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mini{background:var(--card);border-radius:18px;padding:12px;text-align:center;box-shadow:0 2px 0 var(--line);min-width:0}
+.mini b{display:block;font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.mini span{font-size:12px;font-weight:800;color:var(--muted)}
+.goals{display:grid;grid-template-columns:repeat(4,1fr) 1.2fr;gap:8px}
+@media (max-width:400px){.goals{grid-template-columns:repeat(4,1fr)}.goals input{grid-column:1/-1}}
+.goals button{border:0;border-radius:14px;padding:10px 0;background:var(--bg);box-shadow:0 3px 0 var(--line);font-family:var(--display);font-weight:600;font-size:18px}
+.goals button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:0 3px 0 var(--muted)}
+.goals input{font:inherit;font-weight:700;min-width:0;width:100%;padding:10px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);text-align:center}
+.hist{display:flex;flex-direction:column;gap:10px}
+.attempt{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:20px;padding:12px 14px;box-shadow:0 2px 0 var(--line)}
+.attempt.click{cursor:pointer}
+.badge{flex:none;width:56px;height:56px;border-radius:17px;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:17px;
+  background:var(--bg);font-variant-numeric:tabular-nums}
+.badge.ok{background:var(--mint);color:#fff}
+.badge.pb{background:var(--sun);color:var(--on-color)}
+.badge.live{background:var(--coral);color:#fff}
+.attempt .info{flex:1;min-width:0}
+.attempt .t1{font-weight:800}
+.attempt .t2{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tag{display:inline-block;font-size:11px;font-weight:800;padding:1px 8px;border-radius:999px;margin-left:6px;vertical-align:1px;background:var(--sun);color:var(--on-color)}
+.del{border:0;background:none;color:var(--muted);font-size:13px;font-weight:700;padding:8px;border-radius:10px}
+.del.confirm{color:var(--coral)}
+.empty{text-align:center;color:var(--muted);padding:26px 16px;border:2px dashed var(--line);border-radius:20px}
+.section-h{display:flex;justify-content:space-between;align-items:baseline;margin:6px 4px 0}
+.section-h h2{font-family:var(--display);font-weight:600;font-size:22px;margin:0}
+
+/* attempt */
+.meta3{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.chip{border:0;border-radius:18px;padding:14px 0;background:var(--bg);box-shadow:0 5px 0 var(--line);font-family:var(--display);font-weight:700;font-size:28px;
+  user-select:none;-webkit-user-select:none;transition:transform .08s,box-shadow .08s}
+.chip:active{transform:translateY(4px);box-shadow:0 1px 0 var(--line)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:0 5px 0 var(--muted)}
+.chip.flash{background:var(--sun);color:var(--on-color);box-shadow:0 5px 0 var(--sun-deep)}
+.stepper{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:20px;padding:8px}
+.step{width:52px;height:52px;flex:none;border-radius:16px;border:0;background:var(--card);box-shadow:0 3px 0 var(--line);font-family:var(--display);font-weight:700;font-size:28px;line-height:1}
+.count{flex:1;min-width:0;width:100%;text-align:center;font-family:var(--display);font-weight:700;font-size:44px;background:transparent;border:0;color:var(--ink);-moz-appearance:textfield;touch-action:manipulation}
+.count::-webkit-outer-spin-button,.count::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.hint{text-align:center;font-size:13px;color:var(--muted);margin:0}
+.result{text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.result h2{font-family:var(--display);font-weight:700;font-size:40px;margin:0;line-height:1}
+.result p{margin:0;color:var(--muted)}
+/* compact attempt screen: everything on one phone screen */
+#attempt{gap:12px}
+#attempt .appbar{min-height:44px}
+.a-top{display:flex;flex-direction:column;align-items:center;gap:10px}
+.ringbox.small{width:min(180px,46vw);margin:0 auto;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.ringbox.small .ringin{padding:22px}
+.ringbox.small .big-num{font-size:clamp(44px,13vw,60px)}
+.ringbox.small .of{font-size:15px}
+.a-side{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.a-side .mini{padding:8px 6px;text-align:center}
+.a-side .mini b{font-size:20px}
+.card.compact{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:22px}
+.card.compact .chips{grid-template-columns:repeat(3,1fr);gap:10px}
+.card.compact .chip{font-size:32px;padding:14px 0;border-radius:18px;box-shadow:0 5px 0 var(--line)}
+.card.compact .chip[aria-pressed="true"]{box-shadow:0 5px 0 var(--muted)}
+.card.compact .chip.flash{box-shadow:0 5px 0 var(--sun-deep)}
+.addrow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.addrow .stepper{padding:5px;gap:4px;border-radius:16px;min-width:0}
+.addrow .step{width:42px;height:42px;font-size:24px;border-radius:12px}
+.addrow .count{font-size:32px}
+.addrow .btn{padding:14px 16px;font-size:20px;white-space:nowrap}
+.actrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.actrow .btn{font-size:16px;padding:11px}
+.card.compact .note{min-height:1.2em;font-size:13px}
+.card.compact .hint{font-size:12px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:20;width:100%;height:100%}
+@media (prefers-reduced-motion:reduce){.pop,.timerpill.live .dot{animation:none}.ringbox .prog{transition:none}}
+</style>
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+<main class="wrap">
+  <!-- START -->
+  <section class="view" id="menu">
+    <header class="appbar">
+      <h1 class="logo"><i>1K</i>Tausender</h1>
+    </header>
+
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <div class="ringbox" id="m-ring">
+        <svg viewBox="0 0 240 240" aria-hidden="true"><circle class="track" cx="120" cy="120" r="100"/><circle class="prog" cx="120" cy="120" r="100"/></svg>
+        <div class="ringin"><span class="label">Dein Rekord</span><div class="big-num" id="m-best">0</div><div class="of" id="m-of">von 1.000 am Stück</div></div>
+      </div>
+      <p class="label" style="text-align:center">Ziel für den nächsten Versuch</p>
+      <div class="goals" id="goals" role="group" aria-label="Ziel">
+        <input id="goal-custom" type="number" inputmode="numeric" min="1" max="100000" placeholder="Eigenes" aria-label="Eigenes Ziel">
+      </div>
+      <button class="btn big" id="start" type="button">Los geht's!</button>
+      <p class="note" id="menu-note"></p>
+    </div>
+
+    <div class="statrow">
+      <div class="mini"><b id="m-tries">0</b><span>Versuche</span></div>
+      <div class="mini"><b id="m-total">0</b><span>Gesamt</span></div>
+      <div class="mini"><b id="m-pace">–</b><span>Bestes Tempo</span></div>
+    </div>
+
+    <div class="section-h"><h2>Verlauf</h2></div>
+    <div class="hist" id="history"><div class="empty">Noch kein Versuch. Tipp auf „Los geht's!“ – der Timer startet sofort.</div></div>
+  </section>
+
+  <!-- ATTEMPT -->
+  <section class="view" id="attempt" hidden>
+    <header class="appbar">
+      <button class="iconbtn" id="back" type="button" aria-label="Zum Startbildschirm">‹</button>
+      <div class="timerpill" id="timerpill"><span class="dot"></span><span id="timer">00:00</span></div>
+      <span style="width:44px"></span>
+    </header>
+
+    <div class="a-top">
+      <div class="ringbox small" id="a-ring" aria-live="polite">
+        <svg viewBox="0 0 240 240" aria-hidden="true"><circle class="track" cx="120" cy="120" r="100"/><circle class="prog" cx="120" cy="120" r="100"/></svg>
+        <div class="ringin"><div class="big-num" id="counter">0</div><div class="of" id="a-of">von 1.000</div></div>
+      </div>
+      <div class="a-side">
+        <div class="mini"><b id="pace">–</b><span>pro Minute</span></div>
+        <div class="mini"><b id="eta">–</b><span>bis zum Ziel</span></div>
+        <div class="mini"><b id="pbline">–</b><span>Rekord</span></div>
+      </div>
+    </div>
+
+    <div class="card compact" id="picker">
+      <div class="chips" id="chips"></div>
+      <div class="addrow">
+        <div class="stepper">
+          <button class="step" id="minus" type="button" aria-label="Eins weniger">−</button>
+          <input class="count" id="count" type="number" inputmode="numeric" min="1" max="999" value="10" aria-label="Anzahl Liegestütze">
+          <button class="step" id="plus" type="button" aria-label="Eins mehr">+</button>
+        </div>
+        <button class="btn" id="add" type="button">+ Zählen</button>
+      </div>
+      <p class="hint">Doppelt tippen auf eine Zahl oder den Ring zählt sofort dazu</p>
+      <div class="actrow">
+        <button class="btn soft" id="undo" type="button">↩ Rückgängig</button>
+        <button class="btn coral" id="stop" type="button">Abgesetzt</button>
+      </div>
+      <p class="note" id="note"></p>
+    </div>
+
+    <div class="card result" id="result" hidden>
+      <h2 id="r-title">Geschafft!</h2>
+      <p id="r-text"></p>
+      <button class="btn big" id="r-menu" type="button" style="margin-top:6px">Weiter</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  const PRESETS=[1,5,10,20,25,50];
+  const GOALS=[100,250,500,1000];
+  const LS_KEY="pushups-local-v3";
+  const CIRC=2*Math.PI*100;
+  let attempts=[],legacyTotal=0,cur=null,goal=1000,store=null,wakeLock=null;
+  const $=id=>document.getElementById(id);
+  const note=$("note"),countEl=$("count");
+  const fmt=n=>n.toLocaleString("de-DE");
+  document.querySelectorAll(".ringbox .prog").forEach(c=>{c.style.strokeDasharray=CIRC;c.style.strokeDashoffset=CIRC});
+  function setRing(box,frac){box.querySelector(".prog").style.strokeDashoffset=CIRC*(1-Math.max(0,Math.min(1,frac)));box.classList.toggle("done",frac>=1)}
+  function pop(el){el.classList.remove("pop");void el.offsetWidth;el.classList.add("pop")}
+  function clock(ms){
+    const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60,p=v=>String(v).padStart(2,"0");
+    return (h?h+":"+p(m):p(m))+":"+p(x);
+  }
+  function words(ms){
+    const s=Math.round(ms/1000),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;
+    return h?h+" Std "+m+" Min":m?m+" Min "+x+" Sek":x+" Sek";
+  }
+  const shortDur=ms=>{const m=Math.round(ms/60000);return m>=60?Math.floor(m/60)+"h "+(m%60)+"m":m?m+" min":"<1 min"};
+  const best=()=>attempts.filter(a=>a.status==="done").reduce((m,a)=>Math.max(m,a.count),0);
+  const rate=a=>{const d=(a.ended||Date.now())-a.started;return a.count&&d>3000?a.count/(d/60000):0};
+
+  // ---------- menu ----------
+  GOALS.forEach(g=>{
+    const b=document.createElement("button");b.type="button";b.textContent=fmt(g);b.dataset.g=g;
+    b.onclick=()=>{goal=g;$("goal-custom").value="";markGoal()};
+    $("goals").insertBefore(b,$("goal-custom"));
+  });
+  $("goal-custom").addEventListener("input",e=>{const v=Math.round(+e.target.value);if(v>0){goal=v;markGoal()}});
+  function markGoal(){document.querySelectorAll("#goals button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.g===goal)));renderMenuRing()}
+
+  $("start").addEventListener("click",()=>{
+    if(!store){$("menu-note").textContent="Einen Moment, deine Daten laden noch.";return;}
+    const live=attempts.find(a=>a.status==="live");
+    if(live){openAttempt(live.id);return;}
+    const a={id:store.newId(),goal,started:Date.now(),ended:0,count:0,steps:[],status:"live"};
+    attempts.push(a);openAttempt(a.id);store.save(a);
+  });
+
+  function renderMenuRing(){
+    const b=best();
+    $("m-best").textContent=fmt(b);
+    $("m-of").textContent="von "+fmt(goal)+" am Stück";
+    setRing($("m-ring"),b/goal);
+  }
+  function renderMenu(){
+    renderMenuRing();
+    const done=attempts.filter(a=>a.status==="done"),b=best();
+    $("m-tries").textContent=fmt(attempts.length);
+    $("m-total").textContent=fmt(attempts.reduce((s,a)=>s+a.count,0)+legacyTotal);
+    const bp=Math.max(0,...done.map(rate));
+    $("m-pace").textContent=bp?fmt(Math.round(bp))+"/min":"–";
+    const live=attempts.find(a=>a.status==="live");
+    $("start").textContent=live?"Weitermachen ("+fmt(live.count)+")":"Los geht's!";
+    const h=$("history");h.innerHTML="";
+    const list=attempts.slice().sort((x,y)=>y.started-x.started);
+    if(!list.length){h.innerHTML='<div class="empty">Noch kein Versuch. Tipp auf „Los geht\'s!“ – der Timer startet sofort.</div>';return;}
+    let pbMarked=false;
+    list.forEach(a=>{
+      const row=document.createElement("div");row.className="attempt";
+      const isPb=a.status==="done"&&a.count===b&&b>0&&!pbMarked; if(isPb) pbMarked=true;
+      const badge=document.createElement("div");
+      badge.className="badge"+(a.status==="live"?" live":isPb?" pb":a.count>=a.goal?" ok":"");
+      badge.textContent=a.count>=1000?(Math.floor(a.count/100)/10).toLocaleString("de-DE")+"k":a.count;
+      const info=document.createElement("div");info.className="info";
+      const t1=document.createElement("div");t1.className="t1";
+      t1.textContent=a.status==="live"?"Läuft gerade":a.count>=a.goal?"Ziel geschafft":"Abgesetzt bei "+fmt(a.count);
+      if(isPb){const s=document.createElement("span");s.className="tag";s.textContent="Rekord";t1.appendChild(s)}
+      const t2=document.createElement("div");t2.className="t2";
+      const r=rate(a);
+      t2.textContent=new Date(a.started).toLocaleDateString("de-DE",{day:"numeric",month:"short"})+" · Ziel "+fmt(a.goal)+" · "+shortDur((a.ended||Date.now())-a.started)+(r?" · "+fmt(Math.round(r))+"/min":"");
+      info.append(t1,t2);
+      const del=document.createElement("button");del.className="del";del.type="button";del.textContent="Löschen";
+      del.onclick=async ev=>{
+        ev.stopPropagation();
+        if(!del.classList.contains("confirm")){del.classList.add("confirm");del.textContent="Sicher?";
+          setTimeout(()=>{if(del.isConnected){del.classList.remove("confirm");del.textContent="Löschen"}},3500);return;}
+        try{await store.remove(a.id)}catch(_){$("menu-note").textContent="Löschen hat nicht geklappt. Versuch es nochmal."}
+      };
+      row.append(badge,info,del);
+      if(a.status==="live"){row.classList.add("click");row.onclick=()=>openAttempt(a.id)}
+      h.appendChild(row);
+    });
+  }
+
+  // ---------- attempt ----------
+  let tick=null;
+  function openAttempt(id){
+    cur=attempts.find(a=>a.id===id);if(!cur) return;
+    note.textContent="";$("menu").hidden=true;$("attempt").hidden=false;window.scrollTo(0,0);
+    resetStop();renderAttempt();clearInterval(tick);tick=setInterval(renderClock,250);
+    if(cur.status==="live") keepAwake();
+  }
+  function openMenu(){cur=null;clearInterval(tick);releaseAwake();$("attempt").hidden=true;$("menu").hidden=false;window.scrollTo(0,0);renderMenu()}
+  $("back").onclick=openMenu;$("r-menu").onclick=openMenu;
+
+  function renderClock(){
+    if(!cur) return;
+    const live=cur.status==="live",ms=(live?Date.now():cur.ended)-cur.started;
+    $("timer").textContent=clock(ms);
+    $("timerpill").classList.toggle("live",live);
+    const r=rate(cur);
+    $("pace").textContent=r?fmt(Math.round(r)):"–";
+    const left=cur.goal-cur.count;
+    $("eta").textContent=left<=0?"✓":live&&r?shortDur(left/r*60000):"–";
+  }
+  function renderAttempt(){
+    if(!cur) return;
+    const live=cur.status==="live";
+    $("counter").textContent=fmt(cur.count);
+    $("a-of").textContent="von "+fmt(cur.goal);
+    setRing($("a-ring"),cur.count/cur.goal);
+    const b=Math.max(0,...attempts.filter(a=>a.status==="done"&&a.id!==cur.id).map(a=>a.count));
+    $("pbline").textContent=b?(cur.count>b?"Neu! 🏆":fmt(b)):"–";
+    $("undo").disabled=!cur.steps.length;
+    $("picker").hidden=!live;$("result").hidden=live;
+    if(!live){
+      const ok=cur.count>=cur.goal;
+      $("r-title").textContent=ok?"Geschafft! 🎉":"Stark gekämpft!";
+      $("r-text").textContent=fmt(cur.count)+" Liegestütze am Stück in "+words(cur.ended-cur.started)+"."+(ok?"":" Noch "+fmt(cur.goal-cur.count)+" bis zum Ziel.")+(b&&cur.count>b?" Neuer Rekord!":"");
+    }
+    renderClock();
+  }
+
+  // Eigene Doppeltipp-Erkennung: zwei Klicks/Taps auf dasselbe Element innerhalb von 450 ms.
+  // (Das eingebaute "dblclick" kommt auf Handys oft gar nicht an.)
+  function onTap(el,single,double){
+    let last=0;
+    el.addEventListener("click",ev=>{
+      const now=performance.now();
+      if(now-last<450){last=0;ev.preventDefault();double()}
+      else{last=now;single&&single()}
+    });
+    el.addEventListener("dblclick",ev=>ev.preventDefault());
+  }
+  const chips=$("chips");
+  PRESETS.forEach(n=>{
+    const b=document.createElement("button");b.className="chip";b.textContent=n;b.type="button";
+    onTap(b,()=>setCount(n),()=>{setCount(n);addReps(n,b)});
+    chips.appendChild(b);
+  });
+  function setCount(n){
+    n=Math.max(1,Math.min(999,Math.round(+n||1)));countEl.value=n;
+    chips.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",String(+c.textContent===n)));
+  }
+  $("minus").onclick=()=>setCount(+countEl.value-1);
+  $("plus").onclick=()=>setCount(+countEl.value+1);
+  countEl.addEventListener("change",()=>setCount(countEl.value));
+  onTap($("a-ring"),null,()=>addReps(Math.round(+countEl.value||0)));
+  $("add").onclick=()=>addReps(Math.round(+countEl.value||0));
+  setCount(10);
+
+  function addReps(n,chip){
+    if(!cur||cur.status!=="live"||!n) return;
+    cur.steps.push({n,t:Date.now()});cur.count+=n;
+    pop($("counter"));
+    if(chip){chip.classList.add("flash");setTimeout(()=>chip.classList.remove("flash"),350)}
+    note.textContent="+"+n+" 💪";
+    if(cur.count>=cur.goal) finish();
+    else{store.save(cur);renderAttempt()}
+  }
+  $("undo").onclick=()=>{
+    if(!cur||!cur.steps.length) return;
+    const s=cur.steps.pop();cur.count-=s.n;note.textContent="−"+s.n+" zurückgenommen";
+    store.save(cur);renderAttempt();
+  };
+  const stopBtn=$("stop");let stopT=null;
+  function resetStop(){stopBtn.textContent="Abgesetzt";clearTimeout(stopT);stopBtn.dataset.c=""}
+  stopBtn.onclick=()=>{
+    if(!stopBtn.dataset.c){stopBtn.dataset.c="1";stopBtn.textContent="Wirklich beenden?";stopT=setTimeout(resetStop,3500);return;}
+    finish();
+  };
+  function finish(){
+    cur.status="done";cur.ended=Date.now();
+    store.save(cur);releaseAwake();renderAttempt();window.scrollTo(0,0);
+    if(cur.count>=cur.goal) confetti();
+  }
+
+  async function keepAwake(){try{wakeLock=await navigator.wakeLock?.request("screen")}catch(_){}}
+  function releaseAwake(){try{wakeLock?.release()}catch(_){}wakeLock=null}
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&cur?.status==="live")keepAwake()});
+
+  // confetti
+  function confetti(){
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const cv=$("confetti"),ctx=cv.getContext("2d"),dpr=window.devicePixelRatio||1;
+    cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;ctx.scale(dpr,dpr);
+    const cs=getComputedStyle(document.documentElement);
+    const cols=["--sun","--coral","--mint","--ink"].map(v=>cs.getPropertyValue(v).trim());
+    const ps=Array.from({length:140},()=>({x:innerWidth/2,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,
+      r:Math.random()*6+4,c:cols[Math.random()*cols.length|0],a:Math.random()*6,s:(Math.random()-.5)*.3}));
+    const t0=performance.now();
+    (function f(t){
+      ctx.clearRect(0,0,innerWidth,innerHeight);
+      ps.forEach(p=>{p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.a+=p.s;
+        ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.fillStyle=p.c;ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);ctx.restore()});
+      if(t-t0<3500) requestAnimationFrame(f); else ctx.clearRect(0,0,innerWidth,innerHeight);
+    })(t0);
+  }
+
+  function render(){cur?renderAttempt():renderMenu()}
+
+  // ---------- storage ----------
+  const clean=a=>({kind:"attempt",goal:a.goal,started:a.started,ended:a.ended,count:a.count,steps:a.steps.slice(-2000),status:a.status});
+  const parse=(id,x)=>({id,goal:+x.goal||1000,started:+x.started||0,ended:+x.ended||0,count:+x.count||0,
+    steps:Array.isArray(x.steps)?x.steps.map(s=>({n:+s.n||0,t:+s.t||0})):[],status:x.status==="live"?"live":"done"});
+  function useLocal(){
+    try{attempts=JSON.parse(localStorage.getItem(LS_KEY)||"[]").map(a=>parse(a.id,a))}catch(_){attempts=[]}
+    const persist=()=>{try{localStorage.setItem(LS_KEY,JSON.stringify(attempts.map(a=>({id:a.id,...clean(a)}))))}catch(_){}};
+    store={newId:()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6),save:async()=>persist(),
+      remove:async id=>{attempts=attempts.filter(a=>a.id!==id);persist();render()}};
+    render();
+  }
+  async function init(){
+    if(!window.claude||!claude.use){useLocal();return;}
+    let db=null,user=null;
+    try{[db,user]=await Promise.all([claude.use("db"),claude.use("user")])}catch(_){}
+    const uid=user?await user.id():null;
+    if(!db||!uid){useLocal();$("menu-note").textContent="Deine Versuche werden nur in diesem Browser gespeichert.";return;}
+    const col=db.collection("data/users/"+uid);
+    const queue={},busy={};
+    async function flush(id){
+      if(busy[id]) return;busy[id]=true;
+      while(queue[id]){const body=queue[id];queue[id]=null;
+        try{await col.doc(id).set(body)}catch(_){note.textContent="Speichern hakt kurz – ich versuche es weiter.";queue[id]=queue[id]||body;await new Promise(r=>setTimeout(r,1500))}}
+      busy[id]=false;
+    }
+    store={newId:()=>col.doc().id,save:async a=>{queue[a.id]=clean(a);flush(a.id)},remove:async id=>{await col.doc(id).delete()}};
+    const mn=$("menu-note");
+    mn.textContent="Lade deine Versuche …";
+    const timer=setTimeout(()=>{mn.textContent="Deine Daten sind gerade nicht erreichbar. Neue Versuche werden trotzdem gespeichert."},10000);
+    let first=true;
+    col.onSnapshot(snap=>{
+      const list=[];let legacy=0;
+      snap.docs.forEach(d=>{const x=d.data()||{};
+        if(x.kind==="attempt") list.push(parse(d.id,x));
+        else if(x.kind==="set"||(!x.kind&&+x.n>0)) legacy+=(+x.n||0);});
+      if(cur){const i=list.findIndex(a=>a.id===cur.id);
+        if(i>=0&&(queue[cur.id]||busy[cur.id]||snap.metadata.hasPendingWrites)) list[i]=cur;
+        else if(i>=0) cur=list[i];
+        else if(queue[cur.id]||busy[cur.id]) list.push(cur);}
+      attempts=list;legacyTotal=legacy;
+      if(!snap.metadata.fromCache){clearTimeout(timer);if(/^(Lade|Deine Daten)/.test(mn.textContent))mn.textContent="";}
+      if(first&&!snap.metadata.fromCache){first=false;const live=attempts.find(a=>a.status==="live");if(live&&!cur){openAttempt(live.id);return;}}
+      render();
+    },()=>{clearTimeout(timer);mn.textContent="Speicher nicht verfügbar. Lade die Seite später neu.";});
+  }
+  markGoal();render();init();
+})();
+</script>
+
+</body></html>
